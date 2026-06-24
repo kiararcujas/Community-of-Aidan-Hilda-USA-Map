@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Community Map</title>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #F8F6EE;
+}
+
+#map {
+    width: 100%;
+    height: 650px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<script>
+
+// ==========================
+// FULL CLASSIFICATION LABELS
+// ==========================
+const labels = {
+    lv: "Long Voyager",
+    v: "Voyager",
+    f: "Friend",
+    s: "Sojourner",
+    e: "Explorer"
+};
+
+// ==========================
+// COMMUNITY DATA
+// ==========================
+const dataMap = {
+    PA: { e:2 },
+    KY: { e:1 },
+    IN: { e:3, f:1 },
+    KS: { e:1, f:1 },
+    VT: { f:1 },
+    CO: { lv:3, v:3 },
+    NJ: { lv:1, v:1 },
+    WV: { v:3, s:1 },
+    MS: { f:1 },
+    MN: { lv:1, v:2, s:1 },
+    NY: { lv:1, v:2, f:3 },
+    NM: { lv:1, s:2, f:4 },
+    FL: { s:1, e:2 },
+    TN: { v:2, f:1 },
+    CA: { v:1, s:1, e:1, f:3 },
+    TX: { v:6, s:1, e:1, f:1 },
+    OK: { s:1, f:2 },
+    OR: { v:1, f:2 },
+    WA: { v:7, s:1 },
+    VA: { v:2, f:1 },
+    IA: { s:1, v:1 },
+    AZ: { f:1 },
+    NC: { v:1, e:1, f:2 },
+    AL: { v:1, f:1 },
+    SC: { v:1, s:1, e:1 },
+    MI: { f:2 },
+    GA: { v:1, s:1, e:3, f:3 },
+    IL: { s:1, e:1, f:3 },
+    OH: { s:2, f:1 },
+    NE: { s:1 },
+    MO: { s:1, f:1 }
+};
+
+// ==========================
+// BUILD MAP ARRAYS
+// ==========================
+const states = Object.keys(dataMap);
+
+const totals = states.map(s =>
+    Object.values(dataMap[s]).reduce((a,b)=>a+b,0)
+);
+
+// ==========================
+// HOVER TEXT
+// ==========================
+const hoverText = states.map(state => {
+    let breakdown = Object.entries(dataMap[state])
+        .map(([k,v]) => `${labels[k]}: ${v}`)
+        .join("<br>");
+
+    return `<b>${state}</b><br><br>${breakdown}`;
+});
+
+// ==========================
+// MAP VISUAL
+// ==========================
+const trace = {
+    type: "choropleth",
+    locationmode: "USA-states",
+    locations: states,
+    z: totals,
+    text: hoverText,
+    hovertemplate: "%{text}<extra></extra>",
+    colorscale: [
+        [0, "#7FA7B5"],
+        [1, "#2F4858"]
+    ],
+    showscale: false
+};
+
+const layout = {
+    geo: {
+        scope: "usa",
+        showland: true,
+        landcolor: "#F8F6EE"
+    },
+    margin: {t:0,b:0,l:0,r:0}
+};
+
+Plotly.newPlot("map", [trace], layout, {responsive:true});
+
+// ==========================
+// CLICK INTERACTION
+// ==========================
+document.getElementById('map').on('plotly_click', function(data) {
+    const state = data.points[0].location;
+    const info = dataMap[state];
+
+    let message;
+
+    if (!info) {
+        message = `${state}: No members currently in this state, but new connections are always welcome.`;
+    } else {
+        message = `${state}\n\n` +
+            Object.entries(info)
+            .map(([k,v]) => `${labels[k]}: ${v}`)
+            .join("\n");
+    }
+
+    alert(message);
+});
+
+</script>
+
+</body>
+</html>
