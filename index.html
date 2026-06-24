@@ -134,14 +134,14 @@ const trace = {
 };
 
 // ==========================
-// LABELS TRACE
+// LABELS TRACE (BOLD)
 // ==========================
 const labelTrace = {
     type: "scattergeo",
     locationmode: "USA-states",
     lat: states.map(s => stateCenters[s][0]),
     lon: states.map(s => stateCenters[s][1]),
-    text: states,
+    text: states.map(s => `<b>${s}</b>`),  // BOLD LABELS
     mode: "text",
     textfont: {
         size: 14,
