@@ -97,14 +97,37 @@ const stateCenters = {
 };
 
 // ==========================
+// REGION DEFINITIONS
+// ==========================
+const stateRegion = {
+    ME:"NE", NH:"NE", VT:"NE", MA:"NE", RI:"NE", CT:"NE", NY:"NE", NJ:"NE", PA:"NE",
+    DE:"SO", MD:"SO", VA:"SO", WV:"SO", KY:"SO", TN:"SO", NC:"SO", SC:"SO", GA:"SO", FL:"SO",
+    AL:"SO", MS:"SO", AR:"SO", LA:"SO", TX:"SO", OK:"SO",
+    OH:"MW", MI:"MW", IN:"MW", IL:"MW", WI:"MW", MN:"MW", IA:"MW", MO:"MW",
+    ND:"MW", SD:"MW", NE:"MW", KS:"MW",
+    MT:"WE", WY:"WE", CO:"WE", NM:"WE", AZ:"WE", UT:"WE", NV:"WE", ID:"WE",
+    WA:"WE", OR:"WE", CA:"WE", AK:"WE", HI:"WE"
+};
+
+const regionColors = {
+    NE: "#A7C7E7", // Ice Blue
+    SO: "#7FA7B5", // Steel Blue
+    MW: "#4A6FA5", // Deep Blue
+    WE: "#5FA8A7"  // Teal Blue
+};
+
+// ==========================
 // BUILD MAP ARRAYS
 // ==========================
 const allStates = Object.keys(stateCenters);
 
-// *** FIX APPLIED HERE ***
+// Member totals (with 0.0001 fix)
 const totals = allStates.map(s =>
     dataMap[s] ? Object.values(dataMap[s]).reduce((a,b)=>a+b,0) : 0.0001
 );
+
+// Region color array
+const regionFill = allStates.map(s => regionColors[stateRegion[s]]);
 
 // ==========================
 // HOVER TEXT
@@ -122,9 +145,24 @@ const hoverText = allStates.map(state => {
 });
 
 // ==========================
-// CHOROPLETH TRACE
+// REGION BACKGROUND LAYER
 // ==========================
-const trace = {
+const regionTrace = {
+    type: "choropleth",
+    locationmode: "USA-states",
+    locations: allStates,
+    z: allStates.map(s => 1), // dummy
+    text: hoverText,
+    hoverinfo: "skip",
+    colorscale: regionFill.map((c,i)=>[i/(regionFill.length-1), c]),
+    showscale: false,
+    marker: {line: {color:"#FFFFFF", width:1}}
+};
+
+// ==========================
+// MEMBER DENSITY LAYER
+// ==========================
+const densityTrace = {
     type: "choropleth",
     locationmode: "USA-states",
     locations: allStates,
@@ -132,14 +170,15 @@ const trace = {
     text: hoverText,
     hovertemplate: "%{text}<extra></extra>",
     colorscale: [
-        [0, "#7FA7B5"],
+        [0, "#D8E7F5"],
         [1, "#2F4858"]
     ],
-    showscale: false
+    showscale: false,
+    opacity: 0.55
 };
 
 // ==========================
-// LABELS TRACE (ALL STATES)
+// LABELS TRACE
 // ==========================
 const labelTrace = {
     type: "scattergeo",
@@ -168,7 +207,7 @@ const layout = {
     margin: {t:0,b:0,l:0,r:0}
 };
 
-Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:true});
+Plotly.newPlot("map", [regionTrace, densityTrace, labelTrace], layout, {responsive:true});
 
 // ==========================
 // CLICK INTERACTION
