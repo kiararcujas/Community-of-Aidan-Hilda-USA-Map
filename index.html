@@ -26,13 +26,15 @@ body {
 <script>
 
 // ==========================
-// REGION COLORS (BLUE FAMILY)
+// REGION COLORS (BLUE FAMILY + AK/HI UNIQUE)
 // ==========================
 const regionColors = {
     1: "#A7C7E7", // Pacific
     2: "#7FA7B5", // Mountain
     3: "#4A6FA5", // Central
-    4: "#5FA8A7"  // Eastern
+    4: "#5FA8A7", // Eastern
+    5: "#8FB8A8", // Alaska (unique)
+    6: "#B4D6C1"  // Hawaii (unique)
 };
 
 // ==========================
@@ -42,7 +44,9 @@ const regionNames = {
     1: "Pacific",
     2: "Mountain",
     3: "Central",
-    4: "Eastern"
+    4: "Eastern",
+    5: "", // Alaska shows no region
+    6: ""  // Hawaii shows no region
 };
 
 // ==========================
@@ -53,6 +57,7 @@ const regionNames = {
 // Mountain - ID, MT, WY, UT, AZ, NM, CO
 // Central - ND, SD, NE, KS, OK, TX, MN, IA, MO, AR, LA
 // Eastern - all remaining states ME → FL
+// Alaska + Hawaii = their own categories
 
 const stateRegion = {
     // Pacific
@@ -68,7 +73,11 @@ const stateRegion = {
     // Eastern
     ME:4, NH:4, VT:4, MA:4, RI:4, CT:4, NY:4, NJ:4, PA:4,
     DE:4, MD:4, VA:4, WV:4, NC:4, SC:4, GA:4, FL:4,
-    OH:4, MI:4, IN:4, IL:4, WI:4, KY:4, TN:4, AL:4, MS:4
+    OH:4, MI:4, IN:4, IL:4, WI:4, KY:4, TN:4, AL:4, MS:4,
+
+    // Alaska + Hawaii
+    AK:5,
+    HI:6
 };
 
 // ==========================
@@ -126,11 +135,16 @@ const allStates = Object.keys(stateCenters);
 const regionZ = allStates.map(s => stateRegion[s]);
 
 // ==========================
-// HOVER TEXT (NOW INCLUDES REGION)
+// HOVER TEXT (AK + HI SPECIAL CASE)
 // ==========================
 const hoverText = allStates.map(state => {
     const region = regionNames[stateRegion[state]];
     const info = dataMap[state];
+
+    // Alaska + Hawaii → no region line
+    if (state === "AK" || state === "HI") {
+        return `<b>${state}</b><br><br>No members yet — a warm welcome awaits future community members.`;
+    }
 
     let base = `<b>${state}</b><br><b>Region:</b> ${region}<br><br>`;
 
@@ -149,13 +163,17 @@ const hoverText = allStates.map(state => {
 // ==========================
 const colorscale = [
     [0.00, regionColors[1]],
-    [0.25, regionColors[1]],
-    [0.25, regionColors[2]],
-    [0.50, regionColors[2]],
-    [0.50, regionColors[3]],
-    [0.75, regionColors[3]],
-    [0.75, regionColors[4]],
-    [1.00, regionColors[4]]
+    [0.20, regionColors[1]],
+    [0.20, regionColors[2]],
+    [0.40, regionColors[2]],
+    [0.40, regionColors[3]],
+    [0.60, regionColors[3]],
+    [0.60, regionColors[4]],
+    [0.80, regionColors[4]],
+    [0.80, regionColors[5]],
+    [0.90, regionColors[5]],
+    [0.90, regionColors[6]],
+    [1.00, regionColors[6]]
 ];
 
 // ==========================
@@ -208,12 +226,18 @@ const layout = {
 Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:true});
 
 // ==========================
-// CLICK INTERACTION (NOW INCLUDES REGION)
+// CLICK INTERACTION (AK + HI SPECIAL CASE)
 // ==========================
 document.getElementById('map').on('plotly_click', function(data) {
     const state = data.points[0].location;
     const region = regionNames[stateRegion[state]];
     const info = dataMap[state];
+
+    // Alaska + Hawaii → no region line
+    if (state === "AK" || state === "HI") {
+        alert(`${state}\n\nNo members yet — a warm welcome awaits future community members.`);
+        return;
+    }
 
     let message = `${state} — Region: ${region}\n\n`;
 
