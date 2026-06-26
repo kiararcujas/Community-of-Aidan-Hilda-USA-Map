@@ -74,7 +74,7 @@ const dataMap = {
 };
 
 // ==========================
-// STATE CENTROIDS FOR LABELS
+// STATE CENTROIDS
 // ==========================
 const stateCenters = {
     AL:[32.806671,-86.791130], AK:[61.370716,-152.404419], AZ:[33.729759,-111.431221],
@@ -99,16 +99,20 @@ const stateCenters = {
 // ==========================
 // BUILD MAP ARRAYS
 // ==========================
-const states = Object.keys(dataMap);
+const allStates = Object.keys(stateCenters);
 
-const totals = states.map(s =>
-    Object.values(dataMap[s]).reduce((a,b)=>a+b,0)
+const totals = allStates.map(s =>
+    dataMap[s] ? Object.values(dataMap[s]).reduce((a,b)=>a+b,0) : 0
 );
 
 // ==========================
 // HOVER TEXT
 // ==========================
-const hoverText = states.map(state => {
+const hoverText = allStates.map(state => {
+    if (!dataMap[state]) {
+        return `<b>${state}</b><br><br>No members yet — a warm welcome awaits future community members.`;
+    }
+
     let breakdown = Object.entries(dataMap[state])
         .map(([k,v]) => `${labels[k]}: ${v}`)
         .join("<br>");
@@ -122,7 +126,7 @@ const hoverText = states.map(state => {
 const trace = {
     type: "choropleth",
     locationmode: "USA-states",
-    locations: states,
+    locations: allStates,
     z: totals,
     text: hoverText,
     hovertemplate: "%{text}<extra></extra>",
@@ -134,14 +138,14 @@ const trace = {
 };
 
 // ==========================
-// LABELS TRACE (BOLD)
+// LABELS TRACE (ALL STATES)
 // ==========================
 const labelTrace = {
     type: "scattergeo",
     locationmode: "USA-states",
-    lat: states.map(s => stateCenters[s][0]),
-    lon: states.map(s => stateCenters[s][1]),
-    text: states.map(s => `<b>${s}</b>`),  // BOLD LABELS
+    lat: allStates.map(s => stateCenters[s][0]),
+    lon: allStates.map(s => stateCenters[s][1]),
+    text: allStates.map(s => `<b>${s}</b>`),
     mode: "text",
     textfont: {
         size: 14,
@@ -175,7 +179,7 @@ document.getElementById('map').on('plotly_click', function(data) {
     let message;
 
     if (!info) {
-        message = `${state}: No members currently in this state, but new connections are always welcome.`;
+        message = `${state}: No members yet — a warm welcome awaits future community members.`;
     } else {
         message = `${state}\n\n` +
             Object.entries(info)
@@ -190,3 +194,4 @@ document.getElementById('map').on('plotly_click', function(data) {
 
 </body>
 </html>
+
