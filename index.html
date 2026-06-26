@@ -97,7 +97,7 @@ const stateCenters = {
 };
 
 // ==========================
-// REGION DEFINITIONS
+// REGIONS (FOR COLORING)
 // ==========================
 const stateRegion = {
     ME:"NE", NH:"NE", VT:"NE", MA:"NE", RI:"NE", CT:"NE", NY:"NE", NJ:"NE", PA:"NE",
@@ -109,11 +109,11 @@ const stateRegion = {
     WA:"WE", OR:"WE", CA:"WE", AK:"WE", HI:"WE"
 };
 
-const regionColors = {
-    NE: "#A7C7E7", // Ice Blue
-    SO: "#7FA7B5", // Steel Blue
-    MW: "#4A6FA5", // Deep Blue
-    WE: "#5FA8A7"  // Teal Blue
+const regionCode = {
+    NE: 1, // Northeast
+    SO: 2, // South
+    MW: 3, // Midwest
+    WE: 4  // West
 };
 
 // ==========================
@@ -121,13 +121,8 @@ const regionColors = {
 // ==========================
 const allStates = Object.keys(stateCenters);
 
-// Member totals (with 0.0001 fix)
-const totals = allStates.map(s =>
-    dataMap[s] ? Object.values(dataMap[s]).reduce((a,b)=>a+b,0) : 0.0001
-);
-
-// Region color array
-const regionFill = allStates.map(s => regionColors[stateRegion[s]]);
+// Region numeric values for choropleth
+const regionZ = allStates.map(s => regionCode[stateRegion[s]]);
 
 // ==========================
 // HOVER TEXT
@@ -145,40 +140,33 @@ const hoverText = allStates.map(state => {
 });
 
 // ==========================
-// REGION BACKGROUND LAYER
+// CHOROPLETH TRACE (REGIONS)
 // ==========================
-const regionTrace = {
+const trace = {
     type: "choropleth",
     locationmode: "USA-states",
     locations: allStates,
-    z: allStates.map(s => 1), // dummy
-    text: hoverText,
-    hoverinfo: "skip",
-    colorscale: regionFill.map((c,i)=>[i/(regionFill.length-1), c]),
-    showscale: false,
-    marker: {line: {color:"#FFFFFF", width:1}}
-};
-
-// ==========================
-// MEMBER DENSITY LAYER
-// ==========================
-const densityTrace = {
-    type: "choropleth",
-    locationmode: "USA-states",
-    locations: allStates,
-    z: totals,
+    z: regionZ,
     text: hoverText,
     hovertemplate: "%{text}<extra></extra>",
     colorscale: [
-        [0, "#D8E7F5"],
-        [1, "#2F4858"]
+        [0.00, "#A7C7E7"], // Northeast (light ice blue)
+        [0.25, "#7FA7B5"], // South (steel blue)
+        [0.50, "#4A6FA5"], // Midwest (deep blue)
+        [0.75, "#5FA8A7"], // West (teal blue)
+        [1.00, "#5FA8A7"]
     ],
     showscale: false,
-    opacity: 0.55
+    marker: {
+        line: {
+            color: "#FFFFFF",
+            width: 1
+        }
+    }
 };
 
 // ==========================
-// LABELS TRACE
+// LABELS TRACE (STATE ABBREVIATIONS)
 // ==========================
 const labelTrace = {
     type: "scattergeo",
@@ -207,7 +195,7 @@ const layout = {
     margin: {t:0,b:0,l:0,r:0}
 };
 
-Plotly.newPlot("map", [regionTrace, densityTrace, labelTrace], layout, {responsive:true});
+Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:true});
 
 // ==========================
 // CLICK INTERACTION
