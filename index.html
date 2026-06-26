@@ -13,18 +13,16 @@ body {
     background: #F8F6EE;
 }
 
-/* WRAPPER THAT FIXES SPRINGLY CLIPPING */
+/* Scroll wrapper for Springly */
 #map-wrapper {
     width: 100%;
-    height: 600px; /* fits inside Springly iframe */
-    overflow-y: auto; /* <-- THE FIX */
+    height: 600px; /* visible window */
+    overflow-y: auto;
     overflow-x: hidden;
 }
 
-/* The map itself can be tall now */
 #map {
     width: 100%;
-    height: 900px; /* full map height, scrollable inside wrapper */
 }
 </style>
 </head>
@@ -38,15 +36,15 @@ body {
 <script>
 
 // ==========================
-// REGION COLORS (BLUE FAMILY + AK/HI UNIQUE)
+// REGION COLORS
 // ==========================
 const regionColors = {
-    1: "#A7C7E7", // Pacific
-    2: "#7FA7B5", // Mountain
-    3: "#4A6FA5", // Central
-    4: "#5FA8A7", // Eastern
-    5: "#8FB8A8", // Alaska (sage blue)
-    6: "#E8A6A1"  // Hawaii (coral rose)
+    1: "#A7C7E7",
+    2: "#7FA7B5",
+    3: "#4A6FA5",
+    4: "#5FA8A7",
+    5: "#8FB8A8",
+    6: "#E8A6A1"
 };
 
 // ==========================
@@ -65,24 +63,14 @@ const regionNames = {
 // REGION ASSIGNMENTS
 // ==========================
 const stateRegion = {
-    // Pacific
     WA:1, OR:1, NV:1, CA:1,
-
-    // Mountain
     ID:2, MT:2, WY:2, UT:2, AZ:2, NM:2, CO:2,
-
-    // Central
     ND:3, SD:3, NE:3, KS:3, OK:3, TX:3,
     MN:3, IA:3, MO:3, AR:3, LA:3,
-
-    // Eastern
     ME:4, NH:4, VT:4, MA:4, RI:4, CT:4, NY:4, NJ:4, PA:4,
     DE:4, MD:4, VA:4, WV:4, NC:4, SC:4, GA:4, FL:4,
     OH:4, MI:4, IN:4, IL:4, WI:4, KY:4, TN:4, AL:4, MS:4,
-
-    // Alaska + Hawaii
-    AK:5,
-    HI:6
+    AK:5, HI:6
 };
 
 // ==========================
@@ -97,15 +85,15 @@ const labels = {
 };
 
 const dataMap = {
-    PA: { e:2 }, KY: { e:1 }, IN: { e:3, f:1 }, KS: { e:1, f:1 }, VT: { f:1 },
-    CO: { lv:3, v:3 }, NJ: { lv:1, v:1 }, WV: { v:3, s:1 }, MS: { f:1 },
-    MN: { lv:1, v:2, s:1 }, NY: { lv:1, v:2, f:3 }, NM: { lv:1, s:2, f:4 },
-    FL: { s:1, e:2 }, TN: { v:2, f:1 }, CA: { v:1, s:1, e:1, f:3 },
-    TX: { v:6, s:1, e:1, f:1 }, OK: { s:1, f:2 }, OR: { v:1, f:2 },
-    WA: { v:7, s:1 }, VA: { v:2, f:1 }, IA: { s:1, v:1 }, AZ: { f:1 },
-    NC: { v:1, e:1, f:2 }, AL: { v:1, f:1 }, SC: { v:1, s:1, e:1 },
-    MI: { f:2 }, GA: { v:1, s:1, e:3, f:3 }, IL: { s:1, e:1, f:3 },
-    OH: { s:2, f:1 }, NE: { s:1 }, MO: { s:1, f:1 }
+    PA:{e:2}, KY:{e:1}, IN:{e:3,f:1}, KS:{e:1,f:1}, VT:{f:1},
+    CO:{lv:3,v:3}, NJ:{lv:1,v:1}, WV:{v:3,s:1}, MS:{f:1},
+    MN:{lv:1,v:2,s:1}, NY:{lv:1,v:2,f:3}, NM:{lv:1,s:2,f:4},
+    FL:{s:1,e:2}, TN:{v:2,f:1}, CA:{v:1,s:1,e:1,f:3},
+    TX:{v:6,s:1,e:1,f:1}, OK:{s:1,f:2}, OR:{v:1,f:2},
+    WA:{v:7,s:1}, VA:{v:2,f:1}, IA:{s:1,v:1}, AZ:{f:1},
+    NC:{v:1,e:1,f:2}, AL:{v:1,f:1}, SC:{v:1,s:1,e:1},
+    MI:{f:2}, GA:{v:1,s:1,e:3,f:3}, IL:{s:1,e:1,f:3},
+    OH:{s:2,f:1}, NE:{s:1}, MO:{s:1,f:1}
 };
 
 // ==========================
@@ -135,12 +123,10 @@ const stateCenters = {
 // BUILD ARRAYS
 // ==========================
 const allStates = Object.keys(stateCenters);
-
-// Region numeric values
 const regionZ = allStates.map(s => stateRegion[s]);
 
 // ==========================
-// HOVER TEXT (AK + HI SPECIAL CASE)
+// HOVER TEXT
 // ==========================
 const hoverText = allStates.map(state => {
     const region = regionNames[stateRegion[state]];
@@ -152,32 +138,21 @@ const hoverText = allStates.map(state => {
 
     let base = `<b>${state}</b><br><b>Region:</b> ${region}<br><br>`;
 
-    if (!info) {
-        return base + `No members yet — a warm welcome awaits future community members.`;
-    }
+    if (!info) return base + `No members yet — a warm welcome awaits future community members.`;
 
-    return base +
-        Object.entries(info)
-        .map(([k,v]) => `${labels[k]}: ${v}`)
-        .join("<br>");
+    return base + Object.entries(info).map(([k,v]) => `${labels[k]}: ${v}`).join("<br>");
 });
 
 // ==========================
-// DISCRETE COLOR SCALE
+// COLOR SCALE
 // ==========================
 const colorscale = [
-    [0.00, regionColors[1]],
-    [0.20, regionColors[1]],
-    [0.20, regionColors[2]],
-    [0.40, regionColors[2]],
-    [0.40, regionColors[3]],
-    [0.60, regionColors[3]],
-    [0.60, regionColors[4]],
-    [0.80, regionColors[4]],
-    [0.80, regionColors[5]],
-    [0.90, regionColors[5]],
-    [0.90, regionColors[6]],
-    [1.00, regionColors[6]]
+    [0.00, regionColors[1]], [0.20, regionColors[1]],
+    [0.20, regionColors[2]], [0.40, regionColors[2]],
+    [0.40, regionColors[3]], [0.60, regionColors[3]],
+    [0.60, regionColors[4]], [0.80, regionColors[4]],
+    [0.80, regionColors[5]], [0.90, regionColors[5]],
+    [0.90, regionColors[6]], [1.00, regionColors[6]]
 ];
 
 // ==========================
@@ -192,9 +167,7 @@ const trace = {
     hovertemplate: "%{text}<extra></extra>",
     colorscale: colorscale,
     showscale: false,
-    marker: {
-        line: { color: "#FFFFFF", width: 1 }
-    }
+    marker: { line: { color: "#FFFFFF", width: 1 }}
 };
 
 // ==========================
@@ -207,24 +180,18 @@ const labelTrace = {
     lon: allStates.map(s => stateCenters[s][1]),
     text: allStates.map(s => `<b>${s}</b>`),
     mode: "text",
-    textfont: {
-        size: 14,
-        color: "#1A1A1A",
-        family: "Arial"
-    },
+    textfont: { size: 14, color: "#1A1A1A", family: "Arial" },
     hoverinfo: "skip"
 };
 
 // ==========================
-// LAYOUT (SPRINGLY FIX + SCALE FIX)
+// LAYOUT (THE REAL FIX)
 // ==========================
 const layout = {
+    height: 900, // ⭐ THE FIX SPRINGLY RESPECTS
     geo: {
         scope: "usa",
-        projection: { 
-            type: "albers usa",
-            scale: 0.85  // ⭐ THE FIX
-        },
+        projection: { type: "albers usa" },
         showland: true,
         landcolor: "#F8F6EE",
         fitbounds: "locations"
@@ -232,10 +199,13 @@ const layout = {
     margin: {t:0,b:0,l:0,r:0}
 };
 
-Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:true});
+// ==========================
+// PLOT (NON-RESPONSIVE MODE)
+// ==========================
+Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:false});
 
 // ==========================
-// CLICK INTERACTION (AK + HI SPECIAL CASE)
+// CLICK HANDLER
 // ==========================
 document.getElementById('map').on('plotly_click', function(data) {
     const state = data.points[0].location;
@@ -252,9 +222,7 @@ document.getElementById('map').on('plotly_click', function(data) {
     if (!info) {
         message += `No members yet — a warm welcome awaits future community members.`;
     } else {
-        message += Object.entries(info)
-            .map(([k,v]) => `${labels[k]}: ${v}`)
-            .join("\n");
+        message += Object.entries(info).map(([k,v]) => `${labels[k]}: ${v}`).join("\n");
     }
 
     alert(message);
@@ -264,4 +232,5 @@ document.getElementById('map').on('plotly_click', function(data) {
 
 </body>
 </html>
+
 
