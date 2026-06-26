@@ -29,23 +29,46 @@ body {
 // REGION COLORS (BLUE FAMILY)
 // ==========================
 const regionColors = {
-    1: "#A7C7E7", // Northeast
-    2: "#7FA7B5", // South
-    3: "#4A6FA5", // Midwest
-    4: "#5FA8A7"  // West
+    1: "#A7C7E7", // Pacific
+    2: "#7FA7B5", // Mountain
+    3: "#4A6FA5", // Central
+    4: "#5FA8A7"  // Eastern
 };
 
 // ==========================
-// REGION ASSIGNMENTS
+// REGION NAMES
 // ==========================
+const regionNames = {
+    1: "Pacific",
+    2: "Mountain",
+    3: "Central",
+    4: "Eastern"
+};
+
+// ==========================
+// REGION ASSIGNMENTS (UPDATED)
+// ==========================
+
+// Pacific - WA, OR, NV, CA
+// Mountain - ID, MT, WY, UT, AZ, NM, CO
+// Central - ND, SD, NE, KS, OK, TX, MN, IA, MO, AR, LA
+// Eastern - all remaining states ME → FL
+
 const stateRegion = {
-    ME:1, NH:1, VT:1, MA:1, RI:1, CT:1, NY:1, NJ:1, PA:1,
-    DE:2, MD:2, VA:2, WV:2, KY:2, TN:2, NC:2, SC:2, GA:2, FL:2,
-    AL:2, MS:2, AR:2, LA:2, TX:2, OK:2,
-    OH:3, MI:3, IN:3, IL:3, WI:3, MN:3, IA:3, MO:3,
-    ND:3, SD:3, NE:3, KS:3,
-    MT:4, WY:4, CO:4, NM:4, AZ:4, UT:4, NV:4, ID:4,
-    WA:4, OR:4, CA:4, AK:4, HI:4
+    // Pacific
+    WA:1, OR:1, NV:1, CA:1,
+
+    // Mountain
+    ID:2, MT:2, WY:2, UT:2, AZ:2, NM:2, CO:2,
+
+    // Central
+    ND:3, SD:3, NE:3, KS:3, OK:3, TX:3,
+    MN:3, IA:3, MO:3, AR:3, LA:3,
+
+    // Eastern
+    ME:4, NH:4, VT:4, MA:4, RI:4, CT:4, NY:4, NJ:4, PA:4,
+    DE:4, MD:4, VA:4, WV:4, NC:4, SC:4, GA:4, FL:4,
+    OH:4, MI:4, IN:4, IL:4, WI:4, KY:4, TN:4, AL:4, MS:4
 };
 
 // ==========================
@@ -102,13 +125,21 @@ const allStates = Object.keys(stateCenters);
 // Region numeric values
 const regionZ = allStates.map(s => stateRegion[s]);
 
-// Hover text
+// ==========================
+// HOVER TEXT (NOW INCLUDES REGION)
+// ==========================
 const hoverText = allStates.map(state => {
-    if (!dataMap[state]) {
-        return `<b>${state}</b><br><br>No members yet — a warm welcome awaits future community members.`;
+    const region = regionNames[stateRegion[state]];
+    const info = dataMap[state];
+
+    let base = `<b>${state}</b><br><b>Region:</b> ${region}<br><br>`;
+
+    if (!info) {
+        return base + `No members yet — a warm welcome awaits future community members.`;
     }
-    return `<b>${state}</b><br><br>` +
-        Object.entries(dataMap[state])
+
+    return base +
+        Object.entries(info)
         .map(([k,v]) => `${labels[k]}: ${v}`)
         .join("<br>");
 });
@@ -177,19 +208,19 @@ const layout = {
 Plotly.newPlot("map", [trace, labelTrace], layout, {responsive:true});
 
 // ==========================
-// CLICK INTERACTION
+// CLICK INTERACTION (NOW INCLUDES REGION)
 // ==========================
 document.getElementById('map').on('plotly_click', function(data) {
     const state = data.points[0].location;
+    const region = regionNames[stateRegion[state]];
     const info = dataMap[state];
 
-    let message;
+    let message = `${state} — Region: ${region}\n\n`;
 
     if (!info) {
-        message = `${state}: No members yet — a warm welcome awaits future community members.`;
+        message += `No members yet — a warm welcome awaits future community members.`;
     } else {
-        message = `${state}\n\n` +
-            Object.entries(info)
+        message += Object.entries(info)
             .map(([k,v]) => `${labels[k]}: ${v}`)
             .join("\n");
     }
