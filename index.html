@@ -212,13 +212,15 @@ const labelTrace = {
 };
 
 // ==========================
-// LAYOUT
+// LAYOUT (THE FIX FOR AK + HI)
 // ==========================
 const layout = {
     geo: {
         scope: "usa",
+        projection: { type: "albers usa" },
         showland: true,
-        landcolor: "#F8F6EE"
+        landcolor: "#F8F6EE",
+        fitbounds: "locations"
     },
     margin: {t:0,b:0,l:0,r:0}
 };
