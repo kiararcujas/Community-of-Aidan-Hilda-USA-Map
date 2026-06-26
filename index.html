@@ -29,23 +29,23 @@ body {
 // REGION COLORS (BLUE FAMILY)
 // ==========================
 const regionColors = {
-    NE: "#A7C7E7", // Ice Blue
-    SO: "#7FA7B5", // Steel Blue
-    MW: "#4A6FA5", // Deep Blue
-    WE: "#5FA8A7"  // Teal Blue
+    1: "#A7C7E7", // Northeast
+    2: "#7FA7B5", // South
+    3: "#4A6FA5", // Midwest
+    4: "#5FA8A7"  // West
 };
 
 // ==========================
 // REGION ASSIGNMENTS
 // ==========================
 const stateRegion = {
-    ME:"NE", NH:"NE", VT:"NE", MA:"NE", RI:"NE", CT:"NE", NY:"NE", NJ:"NE", PA:"NE",
-    DE:"SO", MD:"SO", VA:"SO", WV:"SO", KY:"SO", TN:"SO", NC:"SO", SC:"SO", GA:"SO", FL:"SO",
-    AL:"SO", MS:"SO", AR:"SO", LA:"SO", TX:"SO", OK:"SO",
-    OH:"MW", MI:"MW", IN:"MW", IL:"MW", WI:"MW", MN:"MW", IA:"MW", MO:"MW",
-    ND:"MW", SD:"MW", NE:"MW", KS:"MW",
-    MT:"WE", WY:"WE", CO:"WE", NM:"WE", AZ:"WE", UT:"WE", NV:"WE", ID:"WE",
-    WA:"WE", OR:"WE", CA:"WE", AK:"WE", HI:"WE"
+    ME:1, NH:1, VT:1, MA:1, RI:1, CT:1, NY:1, NJ:1, PA:1,
+    DE:2, MD:2, VA:2, WV:2, KY:2, TN:2, NC:2, SC:2, GA:2, FL:2,
+    AL:2, MS:2, AR:2, LA:2, TX:2, OK:2,
+    OH:3, MI:3, IN:3, IL:3, WI:3, MN:3, IA:3, MO:3,
+    ND:3, SD:3, NE:3, KS:3,
+    MT:4, WY:4, CO:4, NM:4, AZ:4, UT:4, NV:4, ID:4,
+    WA:4, OR:4, CA:4, AK:4, HI:4
 };
 
 // ==========================
@@ -99,8 +99,8 @@ const stateCenters = {
 // ==========================
 const allStates = Object.keys(stateCenters);
 
-// Region color per state
-const regionColorArray = allStates.map(s => regionColors[stateRegion[s]]);
+// Region numeric values
+const regionZ = allStates.map(s => stateRegion[s]);
 
 // Hover text
 const hoverText = allStates.map(state => {
@@ -114,17 +114,31 @@ const hoverText = allStates.map(state => {
 });
 
 // ==========================
-// CHOROPLETH USING EXPLICIT COLORS
+// DISCRETE COLOR SCALE
+// ==========================
+const colorscale = [
+    [0.00, regionColors[1]],
+    [0.25, regionColors[1]],
+    [0.25, regionColors[2]],
+    [0.50, regionColors[2]],
+    [0.50, regionColors[3]],
+    [0.75, regionColors[3]],
+    [0.75, regionColors[4]],
+    [1.00, regionColors[4]]
+];
+
+// ==========================
+// CHOROPLETH
 // ==========================
 const trace = {
     type: "choropleth",
     locationmode: "USA-states",
     locations: allStates,
-    z: allStates.map((_,i)=>i), // dummy unique values
+    z: regionZ,
     text: hoverText,
     hovertemplate: "%{text}<extra></extra>",
+    colorscale: colorscale,
     showscale: false,
-    colorscale: regionColorArray.map((c,i)=>[i/(regionColorArray.length-1), c]),
     marker: {
         line: { color: "#FFFFFF", width: 1 }
     }
